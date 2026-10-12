@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electricity Bill BD — Bangladesh Residential Bill Calculator</title>
+<meta name="description" content="Free offline bilingual (EN/বাংলা) Bangladesh residential electricity bill calculator with slab logic, editable rates, history and savings estimator.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <span class="bolt" aria-hidden="true">⚡</span>
+      <div>
+        <h1 data-i18n="appTitle">Electricity Bill BD</h1>
+        <p class="tagline" data-i18n="tagline">Bangladesh residential electricity bill calculator</p>
+      </div>
+    </div>
+    <button id="langToggle" class="btn ghost" type="button">বাংলা</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="rule-note" data-i18n="slabRule"></p>
+
+  <!-- Calculator -->
+  <section class="card" aria-labelledby="calcH">
+    <h2 id="calcH" data-i18n="calcTitle">Bill calculator</h2>
+    <div class="row">
+      <div class="field grow">
+        <label for="unitsInput" data-i18n="unitsLabel">Monthly units (kWh)</label>
+        <input id="unitsInput" type="number" inputmode="decimal" min="0" max="100000" step="any"
+               data-i18n-ph="unitsHint" placeholder="Enter the units consumed this month">
+        <p id="unitsError" class="msg err" role="alert" hidden></p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="calcBtn" class="btn primary" type="button" data-i18n="calcBtn">Calculate bill</button>
+    </div>
+
+    <div id="billResult" class="result" hidden>
+      <table class="kv">
+        <tbody id="billRows"></tbody>
+      </table>
+      <div class="total-row">
+        <span data-i18n="totalBill">Total bill</span>
+        <strong id="billTotal"></strong>
+      </div>
+      <div id="saveWrap" class="save-row" hidden>
+        <label class="field grow" for="monthInput">
+          <span data-i18n="monthLabel">Month label</span>
+          <input id="monthInput" type="text" maxlength="40" data-i18n-ph="monthHint" placeholder="e.g. Oct 2026">
+        </label>
+        <button id="saveBtn" class="btn" type="button" data-i18n="saveBtn">Save this bill</button>
+      </div>
+      <p id="saveMsg" class="msg ok" hidden></p>
+    </div>
+  </section>
+
+  <!-- Rate configuration -->
+  <section class="card" aria-labelledby="cfgH">
+    <h2 id="cfgH" data-i18n="configTitle">Rate configuration</h2>
+    <p class="hint" data-i18n="configHint"></p>
+    <h3 data-i18n="slabRates">Slab rates (৳/unit)</h3>
+    <div id="slabRatesWrap" class="grid2"></div>
+    <div class="grid2">
+      <label class="field" for="demandInput"><span data-i18n="demandPerKw">Demand charge (৳/kW)</span>
+        <input id="demandInput" type="number" min="0" step="0.01"></label>
+      <label class="field" for="loadInput"><span data-i18n="loadKw">Sanctioned load (kW)</span>
+        <input id="loadInput" type="number" min="0" step="0.1"></label>
+      <label class="field" for="rentInput"><span data-i18n="rentLabel">Meter rent (৳)</span>
+        <input id="rentInput" type="number" min="0" step="0.01"></label>
+      <label class="field" for="vatInput"><span data-i18n="vatLabel">VAT (%)</span>
+        <input id="vatInput" type="number" min="0" step="0.01"></label>
+    </div>
+    <div class="actions">
+      <button id="resetCfgBtn" class="btn ghost" type="button" data-i18n="resetDefaults">Reset to defaults</button>
+      <p id="configMsg" class="msg ok inline" hidden></p>
+    </div>
+  </section>
+
+  <!-- Savings estimator -->
+  <section class="card" aria-labelledby="svH">
+    <h2 id="svH" data-i18n="savingsTitle">Savings estimator</h2>
+    <p class="hint" data-i18n="savingsHint"></p>
+    <div class="grid2">
+      <label class="field" for="baseSelect"><span data-i18n="baseLabel">Baseline</span>
+        <select id="baseSelect"></select></label>
+      <label class="field" for="cutInput"><span data-i18n="cutLabel">Cut units by (kWh)</span>
+        <input id="cutInput" type="number" min="0" step="any" placeholder="50"></label>
+    </div>
+    <div class="actions">
+      <button id="estimateBtn" class="btn primary" type="button" data-i18n="estimateBtn">Estimate savings</button>
+      <p id="savingsMsg" class="msg err inline" hidden></p>
+    </div>
+    <div id="savingsOut" class="result" hidden>
+      <table class="kv">
+        <tbody>
+          <tr><th scope="row" data-i18n="newSlab">New slab</th><td id="svSlab"></td></tr>
+          <tr><th scope="row" data-i18n="newBill">Projected bill</th><td id="svBill"></td></tr>
+          <tr><th scope="row" data-i18n="monthlySave">Monthly savings</th><td id="svMonthly"></td></tr>
+          <tr><th scope="row" data-i18n="yearlySave">Yearly savings</th><td id="svYearly"></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- History -->
+  <section class="card" aria-labelledby="histH">
+    <h2 id="histH" data-i18n="historyTitle">Bill history</h2>
+    <p id="historyEmpty" class="empty" data-i18n="historyEmpty"></p>
+    <div id="historyTableWrap" class="table-wrap" hidden>
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th scope="col" data-i18n="colMonth">Month</th>
+            <th scope="col" class="num" data-i18n="colUnits">Units</th>
+            <th scope="col" class="num" data-i18n="colTotal">Total (৳)</th>
+            <th scope="col"><span class="sr" data-i18n="delLabel">Delete</span></th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+    <div class="stats">
+      <div><span data-i18n="totalUnits">Total units</span><strong id="statUnits">0</strong></div>
+      <div><span data-i18n="totalAmount">Total amount</span><strong id="statAmount">৳ 0.00</strong></div>
+      <div><span data-i18n="avgUnits">Average units</span><strong id="statAvgUnits">0</strong></div>
+      <div><span data-i18n="avgBill">Average bill</span><strong id="statAvgBill">৳ 0.00</strong></div>
+    </div>
+    <div class="actions">
+      <button id="exportBtn" class="btn" type="button" data-i18n="exportBtn">Export JSON</button>
+      <label class="btn file" for="importFile" data-i18n="importBtn">Import JSON</label>
+      <input id="importFile" type="file" accept="application/json,.json" hidden>
+      <button id="wipeBtn" class="btn danger" type="button" data-i18n="wipeBtn">Wipe all</button>
+      <p id="importMsg" class="msg inline" hidden></p>
+    </div>
+  </section>
+
+  <footer class="disclaimer">
+    <p><strong>⚠</strong> <span data-i18n="disclaimer"></span></p>
+    <p data-i18n="footerNote"></p>
+  </footer>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
